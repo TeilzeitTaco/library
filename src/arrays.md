@@ -46,5 +46,56 @@ In Python:
 
 In FreeBASIC:
 
-````basic
+````purebasic
+Namespace ArrayPrinter
+    'fake generics using preprocessor
+    #Macro implementation(createDefault, T)
+    #Define ValueMapperType T##ValueMapper
+    Type ValueMapperType As Function(ByRef As T) As String
+
+    #If createDefault
+    Function default##T##valueMapper (ByRef value As T) As String
+        Return Str(value)
+    End Function
+    #EndIf
+
+    #If createDefault
+    Sub printArray OverLoad (array() As T, message As String = "", _    
+                            valueMapper As ValueMapperType = @default##T##valueMapper)    
+    #Else
+    Sub printArray OverLoad (array() As T, message As String = "", _
+                             valueMapper As ValueMapperType)
+    #EndIf
+
+        If Not message = "" Then
+            ? message
+        EndIf
+
+        For i As UInteger = LBound(array) To UBound(array)
+            ? i, valueMapper(array(i))
+        Next
+    End Sub
+
+    #Undef ValueMapperType
+    #EndMacro
+
+    'add definitions here
+    implementation(TRUE, String)
+    implementation(TRUE, Integer)
+    implementation(TRUE, UByte)
+
+    'use FALSE for UDTs
+    'implementation(FALSE, UDT)
+
+    #Undef implementation
+
+    'print an array and its variable name
+    #Macro printNamedArray(array)
+    ArrayPrinter.printArray(array(), #array + ": ")
+    #EndMacro
+
+    #Macro printNamedArrayWithMapper(array, valueMapper)
+    ArrayPrinter.printArray(array(), #array + ": ", valueMapper)
+    #EndMacro
+End Namespace
 ````
